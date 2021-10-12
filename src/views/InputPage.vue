@@ -22,12 +22,26 @@
                 value-format="yyyy/MM/dd"
                 format="yyyy年MM月dd日"
                 :picker-options="deadlineOptions"
+                class="deadline-picker"
             ></el-date-picker>
             <el-input placeholder="事项内容" v-model="items[index].title">
-                <el-button slot="append" @click="items.splice(index, 1)">
-                    <i class="el-icon-delete"></i>
+                <el-button
+                    slot="append"
+                    @click="items.splice(index, 1)"
+                    icon="el-icon-delete"
+                >
                 </el-button>
             </el-input>
+            <el-button
+                icon="el-icon-bottom"
+                :disabled="index === items.length - 1"
+                @click="moveDown(index)"
+            ></el-button>
+            <el-button
+                icon="el-icon-top"
+                :disabled="index === 0"
+                @click="moveUp(index)"
+            ></el-button>
         </div>
         <el-button round size="mini" class="add-btn" @click="addNewItem">
             <i class="el-icon-plus"></i>
@@ -111,10 +125,24 @@ export default {
             data.color = this.color;
             this.$router.push({ name: "Result" });
         },
+        moveDown(index) {
+            this.items[index + 1] = this.items.splice(
+                index,
+                1,
+                this.items[index + 1]
+            )[0];
+        },
+        moveUp(index) {
+            this.items[index - 1] = this.items.splice(
+                index,
+                1,
+                this.items[index - 1]
+            )[0];
+        },
     },
     created() {
         if (data.image) this.image = data.image;
-        if (data.items) this.items = data.items;
+        if (data.items.length != 0) this.items = data.items;
         if (data.color) this.color = data.color;
     },
 };
@@ -144,6 +172,11 @@ p {
     display: flex;
     column-gap: 8px;
     margin-bottom: 16px;
+    &::v-deep {
+        .el-button + .el-button {
+            margin-left: 0;
+        }
+    }
 }
 .add-btn {
     display: block;
@@ -181,5 +214,9 @@ p {
     display: block;
     margin-top: 16px;
     margin-left: auto;
+}
+.deadline-picker {
+    flex-shrink: 0;
+    flex-basis: 170px;
 }
 </style>
