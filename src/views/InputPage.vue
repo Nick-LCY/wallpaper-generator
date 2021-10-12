@@ -1,9 +1,35 @@
 <template>
     <div class="main">
-        <h1>数据输入</h1>
+        <h1>并没有什么卵用的壁纸制作器</h1>
+        <h2>闲话</h2>
+        <el-collapse v-model="activeNames">
+            <el-collapse-item title="简介" name="intro">
+                <p>
+                    这个项目能在你喜欢的图片的右上角加一个TODO与Deadline的日历，然后设置为桌面用来当成一个方便的日历（实在是并没有什么卵用（甚至还要手动截图
+                </p>
+                <p>
+                    如果发现了什么问题欢迎反馈（不会除了我和sanka之外还有其他人在用吧？），联系方式：nicklin9907@gmail.com
+                </p>
+            </el-collapse-item>
+            <el-collapse-item title="TODOs" name="todos">
+                <p>
+                    <ol>
+                        <li>加入自动生成图片的功能（好难啊不知道有没有什么库可以做到）</li>
+                        <li>可能添加其他种类的日历</li>
+                        <li>更多的日历自定义（字体，字号，间距，位置之类的）</li>
+                    </ol>
+                </p>
+            </el-collapse-item>
+        </el-collapse>
         <h2>帮助</h2>
         <p>
-            填写事项以及上传图片之后，点击完成进入结果页。按下键盘上的F11按键进入网页全屏，然后截图保存屏幕即可。
+            <ol>
+                <li>填写事项并上传图片 / 导入之前已经保存的数据</li>
+                <li>点击完成进入结果页面</li>
+                <li>按下键盘上的F11进入全屏</li>
+                <li>截图整个屏幕并保存为图片</li>
+            </ol>
+            另外也可以将已填写完的内容保存起来方便下次编辑
         </p>
         <h2>已保存的数据</h2>
         <div class="data-import-container">
@@ -106,6 +132,7 @@ export default {
             },
             savedData: {},
             selectedData: "",
+            activeNames: [],
         };
     },
     methods: {
@@ -263,6 +290,10 @@ export default {
 p {
     border-left: 3px solid #ccc;
     padding: 8px 0 8px 8px;
+    ol {
+        margin: 0;
+        margin-bottom: 8px;
+    }
 }
 .title {
     display: flex;
