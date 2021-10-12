@@ -5,6 +5,19 @@
         <p>
             填写事项以及上传图片之后，点击完成进入结果页。按下键盘上的F11按键进入网页全屏，然后截图保存屏幕即可。
         </p>
+        <h2>已保存的数据</h2>
+        <div class="data-import-container">
+            <el-select placeholder="请选择已保存的数据" v-model="selectedData">
+                <el-option
+                    v-for="name in savedDataNames"
+                    :key="name"
+                    :label="name"
+                    :value="name"
+                ></el-option>
+            </el-select>
+            <el-button type="primary" @click="importData">导入</el-button>
+            <el-button type="danger" @click="deleteData">删除</el-button>
+        </div>
         <h2>事项输入</h2>
         <div class="color-picker">
             <span>选择待办事项颜色</span>
@@ -63,9 +76,12 @@
                 <i class="el-icon-delete"></i>
             </div>
         </div>
-        <el-button type="primary" class="finish" @click="validate">
-            完成
-        </el-button>
+        <div class="btn-group">
+            <el-button class="save" @click="save"> 保存 </el-button>
+            <el-button type="primary" class="finish" @click="validate">
+                完成
+            </el-button>
+        </div>
     </div>
 </template>
 
@@ -88,6 +104,8 @@ export default {
                     return date <= current;
                 },
             },
+            savedData: {},
+            selectedData: "",
         };
     },
     methods: {
@@ -96,6 +114,77 @@ export default {
                 deadline: "",
                 title: "",
             });
+        },
+        importData() {
+            this.$confirm("未保存的内容将会丢失", "确认导入？").then(() => {
+                if (this.selectedData) {
+                    this.items = this.savedData[this.selectedData].items;
+                    this.color = this.savedData[this.selectedData].color;
+                    this.image = this.savedData[this.selectedData].image;
+                } else {
+                    this.$message({
+                        type: "error",
+                        message: "请先选择一个有效的导入内容",
+                    });
+                }
+            });
+        },
+        deleteData() {
+            this.$confirm("删除后将无法恢复", "确认删除？").then(() => {
+                if (this.selectedData) {
+                    this.selectedData = "";
+                    this.$delete(this.savedData, this.selectedData);
+                    this.saveAndUpdate(this.savedData);
+                    this.$message({
+                        type: "success",
+                        message: "删除成功",
+                    });
+                } else {
+                    this.$message({
+                        type: "error",
+                        message: "请先选择一个有效的内容",
+                    });
+                }
+            });
+        },
+        saveAndUpdate(savedData) {
+            window.localStorage.setItem("savedData", JSON.stringify(savedData));
+            this.savedData = savedData;
+        },
+        save() {
+            let that = this;
+            this.$prompt("请输入文件名", "将内容保存于浏览器", {
+                confirmButtonText: "保存",
+                cancelButtonText: "放弃",
+                inputValue: "新文件",
+            })
+                .then((data) => {
+                    let value = data.value;
+                    let savedData = window.localStorage.getItem("savedData");
+                    if (!savedData) savedData = {};
+                    else savedData = JSON.parse(savedData);
+                    function saveToLocalStorage() {
+                        savedData[value] = {
+                            image: that.image,
+                            items: that.items,
+                            color: that.color,
+                        };
+                        that.saveAndUpdate(savedData);
+                        that.$message({ type: "success", message: "保存成功" });
+                    }
+                    if (savedData[value]) {
+                        console.log("冲突");
+                        that.$confirm(
+                            "是否覆盖已存在文件？",
+                            "已有同名文件存在"
+                        )
+                            .then(() => {
+                                saveToLocalStorage();
+                            })
+                            .catch((_) => {});
+                    } else saveToLocalStorage();
+                })
+                .catch((_) => {});
         },
         onChange(e) {
             let reader = new FileReader();
@@ -140,10 +229,23 @@ export default {
             )[0];
         },
     },
+    computed: {
+        savedDataNames() {
+            let savedDataNames = [];
+            for (let name in this.savedData) {
+                savedDataNames.push(name);
+            }
+            return savedDataNames;
+        },
+    },
     created() {
         if (data.image) this.image = data.image;
         if (data.items.length != 0) this.items = data.items;
         if (data.color) this.color = data.color;
+        let savedData = window.localStorage.getItem("savedData");
+        if (savedData) savedData = JSON.parse(savedData);
+        else savedData = {};
+        this.savedData = savedData;
     },
 };
 </script>
@@ -161,6 +263,22 @@ export default {
 p {
     border-left: 3px solid #ccc;
     padding: 8px 0 8px 8px;
+}
+.title {
+    display: flex;
+    align-items: baseline;
+    column-gap: 16px;
+}
+.data-import-container {
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    column-gap: 8px;
+    &::v-deep {
+        .el-button + .el-button {
+            margin-left: 0;
+        }
+    }
 }
 .color-picker {
     display: flex;
@@ -210,10 +328,11 @@ p {
         opacity: 1;
     }
 }
-.finish {
-    display: block;
+.btn-group {
     margin-top: 16px;
-    margin-left: auto;
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
 }
 .deadline-picker {
     flex-shrink: 0;
