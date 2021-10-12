@@ -21,6 +21,7 @@
                 v-model="items[index].deadline"
                 value-format="yyyy/MM/dd"
                 format="yyyy年MM月dd日"
+                :picker-options="deadlineOptions"
             ></el-date-picker>
             <el-input placeholder="事项内容" v-model="items[index].title">
                 <el-button slot="append" @click="items.splice(index, 1)">
@@ -67,6 +68,12 @@ export default {
             ],
             color: "#000000",
             image: "",
+            deadlineOptions: {
+                disabledDate(date) {
+                    let current = new Date();
+                    return date <= current;
+                },
+            },
         };
     },
     methods: {
